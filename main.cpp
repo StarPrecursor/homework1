@@ -2,20 +2,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 using namespace std;
 
 class Data
 {
 public:
+    Data() = default;
     ~Data()
     {
         delete[] numA;
         delete[] numB;
-        //cout << "memory released." << endl;
+        delete[] output;
     }
     int Calculate(void);
     int Divide(void);
+    char* GetOutput(void);
+    int GetOutputLength(void);
+    int GetOutputSign(void);
     int InputErrorInformation(void);
     int Minus(void);
     int Multiply(void);
@@ -23,8 +28,11 @@ public:
     int NumBWrite(char*, int);
     int OperaterWrite(char*);
     int Plus(void);
+    int SetPrintFlag(bool);
     int SetNumAJudge(bool);
+    int SetNumASign(int);
     int SetNumBJudge(bool);
+    int SetNumBSign(int);
 
 private:
     int* numA = NULL;
@@ -39,6 +47,11 @@ private:
 
     int operater = 0;
     bool operaterJudge = false;
+
+    char* output = nullptr;
+    int outputSign = 0;
+    int outputLength = 0;
+    bool printFlag = true;
 };
 
 void DataTypeRefresh(int &);
@@ -78,7 +91,7 @@ int main()
         delete[] inputData;
         inputData = new char[100000];
     }
-
+    return 0;
 }
 
 int Data::NumAWrite(char* inputData, int dataLength)
@@ -157,13 +170,6 @@ int Data::NumAWrite(char* inputData, int dataLength)
         numA = new int[numALength];
         numA[0] = 0;
     }
-    /*cout << "numA inputed" << endl;
-    cout << "numA = " << numASign << ' ';
-    for(int i = 0; i < numALength; i++)
-    {
-        cout << numA[i];
-    }
-    cout <<endl;*/
 
     return 0;
 }
@@ -244,13 +250,8 @@ int Data::NumBWrite(char* inputData, int dataLength)
         numB = new int[numBLength];
         numB[0] = 0;
     }
-    /*cout << "numB inputed" << endl;
-    cout << "numB = " << numBSign << ' ';
-    for(int i = 0; i < numBLength; i++)
-    {
-        cout << numB[i];
-    }
-    cout <<endl;*/
+
+    return 0;
 }
 
 int Data::OperaterWrite(char* inputData)
@@ -288,7 +289,6 @@ int Data::OperaterWrite(char* inputData)
         operaterJudge = false;
     }
 
-    //cout << "operater = " << operater << endl;
     return 0;
 }
 
@@ -307,14 +307,49 @@ void DataTypeRefresh(int &dataType)
     }
 }
 
+char* Data::GetOutput(void)
+{
+    return output;
+}
+
+int Data::GetOutputLength(void)
+{
+    return outputLength;
+}
+
+int Data::GetOutputSign(void)
+{
+    return outputSign;
+}
+
 int Data::SetNumAJudge(bool judge)
 {
     numAJudge = judge;
+    return 0;
+}
+
+int Data::SetNumASign(int sign)
+{
+    numASign = sign;
+    return 0;
 }
 
 int Data::SetNumBJudge(bool judge)
 {
     numBJudge = judge;
+    return 0;
+}
+
+int Data::SetNumBSign(int sign)
+{
+    numBSign = sign;
+    return 0;
+}
+
+int Data::SetPrintFlag(bool flag)
+{
+    printFlag = flag;
+    return 0;
 }
 
 int Data::Calculate(void)
@@ -337,6 +372,7 @@ int Data::Calculate(void)
         default : cout << "Unknown error in Data::Calculate" << endl;
         break;
     }
+
     return 0;
 }
 
@@ -354,14 +390,12 @@ int Data::Plus(void)
     if(numALength < numBLength)
     {
         largerNum = 'B';
-        //cout << "largerNum = B" << endl;
         minDataLength = numALength;
         maxDataLength = numBLength;
     }
     else if(numALength > numBLength)
     {
         largerNum = 'A';
-        //cout << "largerNum = A" << endl;
         minDataLength = numBLength;
         maxDataLength = numALength;
     }
@@ -369,7 +403,6 @@ int Data::Plus(void)
     {
         equalLengthFlag = true;
         largerNum = '?';
-        //cout << "largerNum = ?" << endl;
         minDataLength = numALength;
         maxDataLength = numALength;
     }
@@ -379,13 +412,11 @@ int Data::Plus(void)
     if(numASign == numBSign)
     {
         calculateType = '+';
-        //cout << "calculateType = +" << endl;
         answerSign = numASign;
     }
     else
     {
         calculateType = '-';
-        //cout << "calculateType = -" << endl;
         if(largerNum == 'A')
         {
             answerSign = numASign;
@@ -590,10 +621,17 @@ int Data::Plus(void)
     }
 
     int outputStartPosition = 0;
-    cout << "answer: ";
+    if(printFlag == true)
+    {
+        cout << "answer: ";
+    }
     if(answerSign == 1)
     {
-        cout << '-';
+        outputSign = 1;
+        if(printFlag == true)
+        {
+            cout << '-';
+        }
     }
 
     dataNum = maxDataLength;
@@ -604,17 +642,29 @@ int Data::Plus(void)
 
     if(dataNum == -1)
     {
-        cout << 0;
+        outputLength = 1;
+        output = new char[outputLength];
+        output[0] = '0';
+        if(printFlag == true)
+        {
+            cout << 0;
+        }
     }
-    else if(dataNum > 0)
+    else if(dataNum >= 0)
     {
+        outputLength = dataNum + 1;
+        output = new char[outputLength];
         while(dataNum >= 0)
         {
-            cout << answer[dataNum];
+            output[outputLength - 1 - dataNum] = '0' + answer[dataNum];
+            if(printFlag == true)
+            {
+                cout << answer[dataNum];
+            }
             dataNum--;
         }
     }
-    //////
+
     delete[] answer;
     return 0;
 }
@@ -630,6 +680,7 @@ int Data::Minus(void)
         numBSign = 0;
     }
     Plus();
+
     return 0;
 }
 
@@ -735,10 +786,17 @@ int Data::Multiply(void)
 
     int outputStartPosition = 0;
     int dataNum = 0;
-    cout << "answer: ";
+    if(printFlag == true)
+    {
+        cout << "answer: ";
+    }
     if(answerSign == 1)
     {
-        cout << '-';
+        outputSign = 1;
+        if(printFlag == true)
+        {
+            cout << '-';
+        }
     }
 
     dataNum = answerLength - 1;
@@ -749,13 +807,25 @@ int Data::Multiply(void)
 
     if(dataNum == -1)
     {
-        cout << 0;
+        outputLength = 1;
+        output = new char[1];
+        output[0] = '0';
+        if(printFlag == true)
+        {
+            cout << 0;
+        }
     }
     else if(dataNum > 0)
     {
+        outputLength = dataNum + 1;
+        output = new char[outputLength];
         while(dataNum >= 0)
         {
-            cout << answer[dataNum];
+            output[outputLength - 1 - dataNum] = '0' + answer[dataNum];
+            if(printFlag == true)
+            {
+                cout << answer[dataNum];
+            }
             dataNum--;
         }
     }
@@ -767,22 +837,248 @@ int Data::Multiply(void)
 int Data::Divide(void)
 {
     int *answer = nullptr;
-    int dividentTemp = 0;
-    int quotientTemp = 0;
-    int remainderTemp = 0;
 
     if(numALength < numBLength)
     {
-        cout << "quotient: 0" << endl;
-        cout << "remainder: ";
-        for(int dataNum = 0; dataNum < numBLength; dataNum++)
+        if(printFlag == true)
         {
-            cout << numB[dataNum];
+            cout << "quotient: 0" << endl;
+            cout << "remainder: ";
         }
-        cout << endl;
+        outputSign = numASign;
+        outputLength = numALength;
+        output = new char[outputLength];
+        for(int dataNum = 0; dataNum < numALength; dataNum++)
+        {
+            output[dataNum] = numA[dataNum] + '0';
+            if(printFlag == true)
+            {
+                cout << numA[dataNum];
+            }
+        }
+        if(printFlag == true)
+        {
+            cout << endl;
+        }
         return 0;
     }
 
+    char *timesBegin = nullptr;
+    int timesBeginLength = 0;
+    char *timesEnd = nullptr;
+    int timesEndLength = 0;
+    int deltaLength = numALength - numBLength;
+    if(deltaLength == 0)
+    {
+        timesBeginLength = 1;
+        timesBegin = new char[1];
+        timesBegin[0] = '0';
+        timesEndLength = 1;
+        timesEnd = new char[1];
+        timesEnd[0] = '9';
+    }
+    else if(deltaLength > 0)
+    {
+        timesBeginLength = deltaLength;
+        timesBegin = new char[deltaLength];
+        timesBegin[0] = '1';
+        for(int i = 1; i < deltaLength; i++)
+        {
+            timesBegin[i] = '0';
+        }
+        timesEndLength = deltaLength;
+        timesEnd = new char[deltaLength];
+        for(int i = 0; i < deltaLength; i++)
+        {
+            timesEnd[i] = '9';
+        }
+    }
+
+    char *dividentTemp = nullptr;
+    int dividentTempLength = 0;
+    char *divisorTemp = nullptr;
+    int divisorTempLength = 0;
+    char *quotientTemp = nullptr;
+    int quotientTempLength = 0;
+    char *remainderTemp = nullptr;
+    int remainderTempLength = 0;
+    char *productTemp = nullptr;
+    int productTempLength = 0;
+    Data *dataPtrTemp = nullptr;
+
+    dividentTempLength = numALength;
+    dividentTemp = new char[dividentTempLength];
+    for(int i = 0; i < dividentTempLength; i++)
+    {
+        dividentTemp[i] = numA[i] + '0';
+    }
+    divisorTempLength = numBLength;
+    divisorTemp = new char[divisorTempLength];
+    for(int i = 0; i < divisorTempLength; i++)
+    {
+        divisorTemp[i] = numB[i] + '0';
+    }
+    quotientTempLength = timesBeginLength;
+    quotientTemp = new char[quotientTempLength];
+    for(int i = 0; i < quotientTempLength; i++)
+    {
+        quotientTemp[i] = timesBegin[i];
+    }
+    remainderTempLength = 1;
+    remainderTemp = new char[remainderTempLength];
+    remainderTemp[0] = '0';
+    productTempLength = 1;
+    productTemp = new char[productTempLength];
+    productTemp[0] = '0';
+
+    int numCompare = 0;
+    char *ptrTemp = nullptr;
+    dataPtrTemp = new Data;
+    dataPtrTemp->NumAWrite(divisorTemp, divisorTempLength);
+    dataPtrTemp->NumBWrite(quotientTemp, quotientTempLength);
+    dataPtrTemp->OperaterWrite("*");
+    dataPtrTemp->SetPrintFlag(false);
+    dataPtrTemp->Calculate();
+    ptrTemp = dataPtrTemp->GetOutput();
+    delete[] productTemp;
+    productTempLength = dataPtrTemp->GetOutputLength();
+    productTemp = new char[productTempLength];
+    for(int i = 0; i < productTempLength; i++)
+    {
+        productTemp[i] = ptrTemp[i];
+    }
+    dataPtrTemp->~Data();
+    delete dataPtrTemp;
+
+    dataPtrTemp = new Data;
+    dataPtrTemp->NumAWrite(dividentTemp, dividentTempLength);
+    dataPtrTemp->NumBWrite(productTemp, productTempLength);
+    dataPtrTemp->OperaterWrite("-");
+    dataPtrTemp->SetPrintFlag(false);
+    dataPtrTemp->Calculate();
+    ptrTemp = dataPtrTemp->GetOutput();
+    delete[] remainderTemp;
+    remainderTempLength = dataPtrTemp->GetOutputLength();
+    remainderTemp = new char[remainderTempLength];
+    for(int i = 0; i < remainderTempLength; i++)
+    {
+        remainderTemp[i] = ptrTemp[i];
+    }
+    numCompare = dataPtrTemp->GetOutputSign();
+    dataPtrTemp->~Data();
+    delete dataPtrTemp;
+
+    dataPtrTemp = new Data;
+    dataPtrTemp->NumAWrite(quotientTemp, quotientTempLength);
+    dataPtrTemp->NumBWrite("1", 1);
+    dataPtrTemp->OperaterWrite("+");
+    dataPtrTemp->SetPrintFlag(false);
+    dataPtrTemp->Calculate();
+    ptrTemp = dataPtrTemp->GetOutput();
+    delete[] quotientTemp;
+    quotientTempLength = dataPtrTemp->GetOutputLength();
+    quotientTemp = new char[quotientTempLength];
+    for(int i = 0; i < quotientTempLength; i++)
+    {
+        quotientTemp[i] = ptrTemp[i];
+    }
+    dataPtrTemp->~Data();
+    delete dataPtrTemp;
+
+    while(numCompare == 0)
+    {
+        dataPtrTemp = new Data;
+        dataPtrTemp->NumAWrite(remainderTemp, remainderTempLength);
+        dataPtrTemp->NumBWrite(divisorTemp, divisorTempLength);
+        dataPtrTemp->OperaterWrite("-");
+        dataPtrTemp->SetPrintFlag(false);
+        dataPtrTemp->Calculate();
+        ptrTemp = dataPtrTemp->GetOutput();
+        delete[] remainderTemp;
+        remainderTempLength = dataPtrTemp->GetOutputLength();
+        remainderTemp = new char[remainderTempLength];
+        for(int i = 0; i < remainderTempLength; i++)
+        {
+            remainderTemp[i] = ptrTemp[i];
+        }
+        numCompare = dataPtrTemp->GetOutputSign();
+        dataPtrTemp->~Data();
+        delete dataPtrTemp;
+
+        dataPtrTemp = new Data;
+        dataPtrTemp->NumAWrite(quotientTemp, quotientTempLength);
+        dataPtrTemp->NumBWrite("1", 1);
+        dataPtrTemp->OperaterWrite("+");
+        dataPtrTemp->SetPrintFlag(false);
+        dataPtrTemp->Calculate();
+        ptrTemp = dataPtrTemp->GetOutput();
+        delete[] quotientTemp;
+        quotientTempLength = dataPtrTemp->GetOutputLength();
+        quotientTemp = new char[quotientTempLength];
+        for(int i = 0; i < quotientTempLength; i++)
+        {
+            quotientTemp[i] = ptrTemp[i];
+        }
+        dataPtrTemp->~Data();
+        delete dataPtrTemp;
+    }
+
+    dataPtrTemp = new Data;
+    dataPtrTemp->NumAWrite(quotientTemp, quotientTempLength);
+    dataPtrTemp->NumBWrite("2", 1);
+    dataPtrTemp->OperaterWrite("-");
+    dataPtrTemp->SetPrintFlag(false);
+    dataPtrTemp->Calculate();
+    ptrTemp = dataPtrTemp->GetOutput();
+    delete[] quotientTemp;
+    quotientTempLength = dataPtrTemp->GetOutputLength();
+    quotientTemp = new char[quotientTempLength];
+    for(int i = 0; i < quotientTempLength; i++)
+    {
+        quotientTemp[i] = ptrTemp[i];
+    }
+    dataPtrTemp->~Data();
+    delete dataPtrTemp;
+
+    dataPtrTemp = new Data;
+    dataPtrTemp->NumAWrite(remainderTemp, remainderTempLength);
+    dataPtrTemp->SetNumASign(1);
+    dataPtrTemp->NumBWrite(divisorTemp, divisorTempLength);
+    dataPtrTemp->OperaterWrite("+");
+    dataPtrTemp->SetPrintFlag(false);
+    dataPtrTemp->Calculate();
+    ptrTemp = dataPtrTemp->GetOutput();
+    delete[] remainderTemp;
+    remainderTempLength = dataPtrTemp->GetOutputLength();
+    remainderTemp = new char[remainderTempLength];
+    for(int i = 0; i < remainderTempLength; i++)
+    {
+        remainderTemp[i] = ptrTemp[i];
+    }
+    numCompare = dataPtrTemp->GetOutputSign();
+    dataPtrTemp->~Data();
+    delete dataPtrTemp;
+
+    if(printFlag == true)
+    {
+        cout << "quotient: ";
+        for(int i = 0; i < quotientTempLength; i++)
+        {
+            cout << quotientTemp[i];
+        }
+        cout << endl << "remainder: ";
+        for(int i = 0; i < remainderTempLength; i++)
+        {
+            cout << remainderTemp[i];
+        }
+        cout << endl;
+    }
+
+    delete[] dividentTemp;
+    delete[] divisorTemp;
+    delete[] quotientTemp;
+    delete[] remainderTemp;
+    delete[] productTemp;
 
     return 0;
 }
